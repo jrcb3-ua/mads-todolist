@@ -6,6 +6,7 @@ C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\service\Init
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\config\ModelMapperConfig.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\model\Tarea.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\authentication\ManagerUserSession.java
+C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\controller\MenuModelAdvice.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\dto\UsuarioData.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\service\UsuarioServiceException.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\dto\RegistroData.java
