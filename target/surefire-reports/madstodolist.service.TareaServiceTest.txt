@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: madstodolist.service.TareaServiceTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.229 s - in madstodolist.service.TareaServiceTest
