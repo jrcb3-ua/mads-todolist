@@ -14,6 +14,7 @@ C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\dto\Registro
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\dto\LoginData.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\service\TareaService.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\model\Usuario.java
+C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\controller\exception\UsuarioNotFoundException.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\controller\HomeController.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\Application.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\repository\UsuarioRepository.java
