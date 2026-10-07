@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -49,6 +50,7 @@ public class RegistradosWebTest {
                         containsString("ana@ua"),
                         containsString("2"),
                         containsString("luis@ua"),
+                        containsString("href=\"/registrados/1\""),
                         not(containsString("secreto-ana")),
                         not(containsString("secreto-luis"))
                 )));
@@ -61,5 +63,34 @@ public class RegistradosWebTest {
         mockMvc.perform(get("/registrados"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Usuarios registrados")));
+    }
+
+    @Test
+    public void descripcionUsuarioMuestraSusDatosSinContrasena() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(7L);
+        usuario.setNombre("Ana García");
+        usuario.setEmail("ana@ua");
+        usuario.setFechaNacimiento(new Date(0));
+        usuario.setPassword("no-mostrar");
+        when(usuarioService.findById(7L)).thenReturn(usuario);
+
+        mockMvc.perform(get("/registrados/7"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(
+                        containsString("7"),
+                        containsString("Ana García"),
+                        containsString("ana@ua"),
+                        containsString("01/01/1970"),
+                        not(containsString("no-mostrar"))
+                )));
+    }
+
+    @Test
+    public void descripcionUsuarioInexistenteDevuelve404() throws Exception {
+        when(usuarioService.findById(999L)).thenReturn(null);
+
+        mockMvc.perform(get("/registrados/999"))
+                .andExpect(status().isNotFound());
     }
 }
