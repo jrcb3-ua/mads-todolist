@@ -1,0 +1,30 @@
+# Created at 2026-10-07T09:13:30.059
+Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=IBM850
+
+# Created at 2026-10-07T09:13:39.207
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+
+# Created at 2026-10-07T09:13:39.208
+WARNING: sun.misc.Unsafe::staticFieldOffset has been called by org.modelmapper.internal.typetools.TypeResolver (file:/C:/Users/Jose/.m2/repository/org/modelmapper/modelmapper/3.0.0/modelmapper-3.0.0.jar)
+
+# Created at 2026-10-07T09:13:39.210
+WARNING: Please consider reporting this to the maintainers of class org.modelmapper.internal.typetools.TypeResolver
+
+# Created at 2026-10-07T09:13:39.247
+WARNING: sun.misc.Unsafe::staticFieldOffset will be removed in a future release
+
+# Created at 2026-10-07T09:13:39.394
+WARNING: A restricted method in java.lang.System has been called
+
+# Created at 2026-10-07T09:13:39.395
+WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (file:/C:/Users/Jose/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/9.0.78/tomcat-embed-core-9.0.78.jar)
+
+# Created at 2026-10-07T09:13:39.396
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+
+# Created at 2026-10-07T09:13:39.397
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+# Created at 2026-10-07T09:13:39.399
+
+
