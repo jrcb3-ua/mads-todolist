@@ -3,6 +3,7 @@ C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\controller\L
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\dto\TareaData.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\repository\TareaRepository.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\service\InitDbService.java
+C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\controller\UsuarioController.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\config\ModelMapperConfig.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\model\Tarea.java
 C:\Users\Jose\source\repos\mads-todolist\src\main\java\madstodolist\authentication\ManagerUserSession.java
