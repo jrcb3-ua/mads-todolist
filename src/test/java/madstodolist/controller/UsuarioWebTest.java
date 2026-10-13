@@ -9,8 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -92,5 +95,54 @@ public class UsuarioWebTest {
                         .param("eMail","ana.garcia@gmail.com")
                         .param("password","000"))
                 .andExpect(content().string(containsString("Contraseña incorrecta")));
+    }
+
+    @Test
+    public void loginAdministradorRedirigeAlListadoDeUsuarios() throws Exception {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setId(9L);
+        administrador.setAdministrador(true);
+        when(usuarioService.login("admin@ua", "123"))
+                .thenReturn(UsuarioService.LoginStatus.LOGIN_OK);
+        when(usuarioService.findByEmail("admin@ua")).thenReturn(administrador);
+
+        mockMvc.perform(post("/login")
+                        .param("eMail", "admin@ua")
+                        .param("password", "123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/registrados"));
+    }
+
+    @Test
+    public void formularioRegistroMuestraCheckboxSiNoHayAdministrador() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(false);
+
+        mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("name=\"administrador\"")));
+    }
+
+    @Test
+    public void formularioRegistroOcultaCheckboxSiYaHayAdministrador() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(true);
+
+        mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(
+                        containsString("name=\"administrador\""))));
+    }
+
+    @Test
+    public void registroPermiteSolicitarElRolAdministrador() throws Exception {
+        when(usuarioService.existeAdministrador()).thenReturn(false);
+
+        mockMvc.perform(post("/registro")
+                        .param("email", "admin@ua")
+                        .param("password", "123")
+                        .param("administrador", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+
+        verify(usuarioService).registrar(argThat(UsuarioData::isAdministrador));
     }
 }

@@ -73,6 +73,7 @@ public class RegistradosWebTest {
         usuario.setEmail("ana@ua");
         usuario.setFechaNacimiento(new Date(0));
         usuario.setPassword("no-mostrar");
+        usuario.setAdministrador(true);
         when(usuarioService.findById(7L)).thenReturn(usuario);
 
         mockMvc.perform(get("/registrados/7"))
@@ -82,6 +83,7 @@ public class RegistradosWebTest {
                         containsString("Ana García"),
                         containsString("ana@ua"),
                         containsString("01/01/1970"),
+                        containsString("Sí"),
                         not(containsString("no-mostrar"))
                 )));
     }

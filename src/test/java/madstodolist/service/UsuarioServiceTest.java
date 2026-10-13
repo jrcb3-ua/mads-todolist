@@ -185,4 +185,25 @@ public class UsuarioServiceTest {
         assertThat(usuario.getEmail()).isEqualTo("user@ua");
         assertThat(usuario.getNombre()).isEqualTo("Usuario Ejemplo");
     }
+
+    @Test
+    public void servicioRegistraUnicoAdministrador() {
+        UsuarioData administrador = new UsuarioData();
+        administrador.setEmail("admin@ua");
+        administrador.setPassword("123");
+        administrador.setAdministrador(true);
+
+        UsuarioData administradorRegistrado = usuarioService.registrar(administrador);
+
+        assertThat(administradorRegistrado.isAdministrador()).isTrue();
+        assertThat(usuarioService.existeAdministrador()).isTrue();
+
+        UsuarioData segundoAdministrador = new UsuarioData();
+        segundoAdministrador.setEmail("otro-admin@ua");
+        segundoAdministrador.setPassword("123");
+        segundoAdministrador.setAdministrador(true);
+
+        Assertions.assertThrows(UsuarioServiceException.class,
+                () -> usuarioService.registrar(segundoAdministrador));
+    }
 }

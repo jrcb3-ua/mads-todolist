@@ -20,6 +20,9 @@
         <dt class="col-sm-3">Fecha de nacimiento</dt>
         <dd class="col-sm-9"
             th:text="${usuario.fechaNacimiento != null ? #dates.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : ''}"></dd>
+
+        <dt class="col-sm-3">Administrador</dt>
+        <dd class="col-sm-9" th:text="${usuario.administrador ? 'Sí' : 'No'}"></dd>
     </dl>
     <a class="btn btn-link" th:href="@{/registrados}">Volver al listado</a>
 </main>
