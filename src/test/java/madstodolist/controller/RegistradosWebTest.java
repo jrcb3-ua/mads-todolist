@@ -1,5 +1,6 @@
 package madstodolist.controller;
 
+import madstodolist.authentication.ManagerUserSession;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.UsuarioService;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,8 +33,21 @@ public class RegistradosWebTest {
     @MockBean
     private UsuarioService usuarioService;
 
+        @MockBean
+        private ManagerUserSession managerUserSession;
+
+        private void autenticarAdministrador() {
+                UsuarioData administrador = new UsuarioData();
+                administrador.setId(42L);
+                administrador.setEmail("admin@ua");
+                administrador.setAdministrador(true);
+                when(managerUserSession.usuarioLogeado()).thenReturn(42L);
+                when(usuarioService.findById(42L)).thenReturn(administrador);
+        }
+
     @Test
     public void listaUsuariosRegistradosMuestraIdentificadoresYCorreosSinContrasenas() throws Exception {
+                autenticarAdministrador();
         UsuarioData ana = new UsuarioData();
         ana.setId(1L);
         ana.setEmail("ana@ua");
@@ -58,6 +73,7 @@ public class RegistradosWebTest {
 
     @Test
     public void listaUsuariosRegistradosSinUsuariosMuestraTablaVacia() throws Exception {
+                autenticarAdministrador();
         when(usuarioService.listarUsuarios()).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/registrados"))
@@ -67,6 +83,7 @@ public class RegistradosWebTest {
 
     @Test
     public void descripcionUsuarioMuestraSusDatosSinContrasena() throws Exception {
+                autenticarAdministrador();
         UsuarioData usuario = new UsuarioData();
         usuario.setId(7L);
         usuario.setNombre("Ana García");
@@ -90,9 +107,50 @@ public class RegistradosWebTest {
 
     @Test
     public void descripcionUsuarioInexistenteDevuelve404() throws Exception {
+                autenticarAdministrador();
         when(usuarioService.findById(999L)).thenReturn(null);
 
         mockMvc.perform(get("/registrados/999"))
                 .andExpect(status().isNotFound());
     }
+
+        @Test
+        public void listadoUsuariosNoEstaDisponibleSinSesion() throws Exception {
+                mockMvc.perform(get("/registrados"))
+                                .andExpect(status().isUnauthorized())
+                                .andExpect(result -> assertThat(result.getResponse().getErrorMessage())
+                                                .contains("No tienes permisos suficientes"));
+        }
+
+        @Test
+        public void descripcionUsuarioNoEstaDisponibleSinSesion() throws Exception {
+                mockMvc.perform(get("/registrados/7"))
+                                .andExpect(status().isUnauthorized())
+                                .andExpect(result -> assertThat(result.getResponse().getErrorMessage())
+                                                .contains("No tienes permisos suficientes"));
+        }
+
+        @Test
+        public void listadoUsuariosNoEstaDisponibleParaUsuarioNoAdministrador() throws Exception {
+                UsuarioData usuario = new UsuarioData();
+                usuario.setId(5L);
+                usuario.setAdministrador(false);
+                when(managerUserSession.usuarioLogeado()).thenReturn(5L);
+                when(usuarioService.findById(5L)).thenReturn(usuario);
+
+                mockMvc.perform(get("/registrados"))
+                                .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        public void descripcionUsuarioNoEstaDisponibleParaUsuarioNoAdministrador() throws Exception {
+                UsuarioData usuario = new UsuarioData();
+                usuario.setId(5L);
+                usuario.setAdministrador(false);
+                when(managerUserSession.usuarioLogeado()).thenReturn(5L);
+                when(usuarioService.findById(5L)).thenReturn(usuario);
+
+                mockMvc.perform(get("/registrados/7"))
+                                .andExpect(status().isUnauthorized());
+        }
 }
