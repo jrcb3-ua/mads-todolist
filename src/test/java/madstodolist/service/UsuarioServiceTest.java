@@ -206,4 +206,22 @@ public class UsuarioServiceTest {
         Assertions.assertThrows(UsuarioServiceException.class,
                 () -> usuarioService.registrar(segundoAdministrador));
     }
+
+        @Test
+        public void servicioBloqueaDesbloqueaUsuarioYRechazaSuLoginMientrasEstaBloqueado() {
+        Long usuarioId = addUsuarioBD();
+
+        assertThat(usuarioService.login("user@ua", "123"))
+            .isEqualTo(UsuarioService.LoginStatus.LOGIN_OK);
+
+        UsuarioData usuarioBloqueado = usuarioService.cambiarBloqueoUsuario(usuarioId);
+        assertThat(usuarioBloqueado.isBloqueado()).isTrue();
+        assertThat(usuarioService.login("user@ua", "123"))
+            .isEqualTo(UsuarioService.LoginStatus.USER_BLOCKED);
+
+        UsuarioData usuarioHabilitado = usuarioService.cambiarBloqueoUsuario(usuarioId);
+        assertThat(usuarioHabilitado.isBloqueado()).isFalse();
+        assertThat(usuarioService.login("user@ua", "123"))
+            .isEqualTo(UsuarioService.LoginStatus.LOGIN_OK);
+        }
 }
