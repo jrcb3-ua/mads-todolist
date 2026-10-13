@@ -18,8 +18,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,11 +55,17 @@ public class RegistradosWebTest {
         ana.setId(1L);
         ana.setEmail("ana@ua");
         ana.setPassword("secreto-ana");
+        ana.setBloqueado(false);
         UsuarioData luis = new UsuarioData();
         luis.setId(2L);
         luis.setEmail("luis@ua");
         luis.setPassword("secreto-luis");
-        when(usuarioService.listarUsuarios()).thenReturn(Arrays.asList(ana, luis));
+        luis.setBloqueado(true);
+        UsuarioData administrador = new UsuarioData();
+        administrador.setId(42L);
+        administrador.setEmail("admin@ua");
+        administrador.setAdministrador(true);
+        when(usuarioService.listarUsuarios()).thenReturn(Arrays.asList(ana, luis, administrador));
 
         mockMvc.perform(get("/registrados"))
                 .andExpect(status().isOk())
@@ -66,6 +75,10 @@ public class RegistradosWebTest {
                         containsString("2"),
                         containsString("luis@ua"),
                         containsString("href=\"/registrados/1\""),
+                        containsString("Bloqueado"),
+                        containsString("Habilitar"),
+                        containsString("Bloquear"),
+                        containsString("Administrador actual"),
                         not(containsString("secreto-ana")),
                         not(containsString("secreto-luis"))
                 )));
@@ -152,5 +165,44 @@ public class RegistradosWebTest {
 
                 mockMvc.perform(get("/registrados/7"))
                                 .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        public void administradorPuedeAlternarBloqueoDeUsuario() throws Exception {
+                autenticarAdministrador();
+                when(usuarioService.cambiarBloqueoUsuario(7L)).thenReturn(new UsuarioData());
+
+                mockMvc.perform(post("/registrados/7/bloqueo"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                                        .redirectedUrl("/registrados"));
+
+                verify(usuarioService).cambiarBloqueoUsuario(7L);
+        }
+
+        @Test
+        public void usuarioNoAdministradorNoPuedeCambiarBloqueo() throws Exception {
+                UsuarioData usuario = new UsuarioData();
+                usuario.setId(5L);
+                usuario.setAdministrador(false);
+                when(managerUserSession.usuarioLogeado()).thenReturn(5L);
+                when(usuarioService.findById(5L)).thenReturn(usuario);
+
+                mockMvc.perform(post("/registrados/7/bloqueo"))
+                                .andExpect(status().isUnauthorized());
+
+                verify(usuarioService, never()).cambiarBloqueoUsuario(7L);
+        }
+
+        @Test
+        public void administradorNoPuedeBloquearSuPropiaCuenta() throws Exception {
+                autenticarAdministrador();
+
+                mockMvc.perform(post("/registrados/42/bloqueo"))
+                                .andExpect(status().is3xxRedirection())
+                                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                                        .redirectedUrl("/registrados"));
+
+                verify(usuarioService, never()).cambiarBloqueoUsuario(42L);
         }
 }

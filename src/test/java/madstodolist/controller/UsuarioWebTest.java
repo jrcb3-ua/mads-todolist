@@ -98,6 +98,18 @@ public class UsuarioWebTest {
     }
 
     @Test
+    public void servicioLoginUsuarioBloqueadoMuestraError() throws Exception {
+        when(usuarioService.login("usuario@ua", "123"))
+                .thenReturn(UsuarioService.LoginStatus.USER_BLOCKED);
+
+        mockMvc.perform(post("/login")
+                        .param("eMail", "usuario@ua")
+                        .param("password", "123"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Usuario bloqueado")));
+    }
+
+    @Test
     public void loginAdministradorRedirigeAlListadoDeUsuarios() throws Exception {
         UsuarioData administrador = new UsuarioData();
         administrador.setId(9L);

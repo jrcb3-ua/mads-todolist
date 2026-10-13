@@ -12,6 +12,8 @@
         <tr>
             <th>Identificador</th>
             <th>Correo electrónico</th>
+            <th>Estado</th>
+            <th>Acción</th>
         </tr>
         </thead>
         <tbody>
@@ -20,6 +22,18 @@
                 <a th:href="@{/registrados/{id}(id=${usuario.id})}" th:text="${usuario.id}"></a>
             </td>
             <td th:text="${usuario.email}"></td>
+            <td th:text="${usuario.bloqueado ? 'Bloqueado' : 'Activo'}"></td>
+            <td>
+                <form method="post" th:if="${usuario.id != usuarioMenu.id}"
+                      th:action="@{/registrados/{id}/bloqueo(id=${usuario.id})}">
+                    <button class="btn btn-sm" type="submit"
+                            th:classappend="${usuario.bloqueado ? 'btn-success' : 'btn-warning'}"
+                            th:text="${usuario.bloqueado ? 'Habilitar' : 'Bloquear'}">
+                        Bloquear
+                    </button>
+                </form>
+                <span th:if="${usuario.id == usuarioMenu.id}">Administrador actual</span>
+            </td>
         </tr>
         </tbody>
     </table>

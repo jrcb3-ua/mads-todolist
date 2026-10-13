@@ -23,6 +23,9 @@
 
         <dt class="col-sm-3">Administrador</dt>
         <dd class="col-sm-9" th:text="${usuario.administrador ? 'Sí' : 'No'}"></dd>
+
+        <dt class="col-sm-3">Estado</dt>
+        <dd class="col-sm-9" th:text="${usuario.bloqueado ? 'Bloqueado' : 'Activo'}"></dd>
     </dl>
     <a class="btn btn-link" th:href="@{/registrados}">Volver al listado</a>
 </main>
