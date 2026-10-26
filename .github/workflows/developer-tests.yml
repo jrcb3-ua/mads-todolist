@@ -14,4 +14,4 @@ jobs:
       - uses: actions/checkout@v2
       # Y lanzamos los tests
       - name: Launch tests with Maven
-        run:  ./mvnw test
+        run:  sh ./mvnw test
