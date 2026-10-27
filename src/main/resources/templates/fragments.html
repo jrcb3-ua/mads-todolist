@@ -24,6 +24,9 @@
             <li class="nav-item">
                 <a class="nav-link" th:href="@{/usuarios/{id}/tareas(id=${usuarioMenu.id})}">Tareas</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/equipos}">Equipos</a>
+            </li>
         </ul>
         <ul class="navbar-nav ml-auto" th:if="${usuarioMenu != null}">
             <li class="nav-item dropdown">
