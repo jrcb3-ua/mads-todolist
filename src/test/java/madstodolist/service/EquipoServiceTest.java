@@ -218,4 +218,10 @@ public class EquipoServiceTest {
         assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, "   "))
                 .isInstanceOf(EquipoServiceException.class);
     }
+
+    @Test
+    public void eliminarEquipoInexistenteLanzaExcepcion() {
+        assertThatThrownBy(() -> equipoService.eliminarEquipo(999L))
+                .isInstanceOf(EquipoServiceException.class);
+    }
 }
