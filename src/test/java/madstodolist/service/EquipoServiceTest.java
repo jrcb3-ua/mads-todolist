@@ -203,4 +203,19 @@ public class EquipoServiceTest {
         EquipoData equipoActualizado = equipoService.recuperarEquipo(equipo.getId());
         assertThat(equipoActualizado.getNombre()).isEqualTo("Proyecto Modificado");
     }
+
+    @Test
+    public void modificarEquipoExcepciones() {
+        EquipoData equipo = equipoService.crearEquipo("Proyecto Inicial");
+        final Long idEquipo = equipo.getId();
+
+        assertThatThrownBy(() -> equipoService.modificarEquipo(999L, "Nombre"))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, null))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, ""))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, "   "))
+                .isInstanceOf(EquipoServiceException.class);
+    }
 }
