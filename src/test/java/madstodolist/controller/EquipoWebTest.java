@@ -190,4 +190,109 @@ public class EquipoWebTest {
 
         assertThat(equipoService.usuariosEquipo(equipo.getId())).isEmpty();
     }
+
+    @Test
+    public void gestionarEquiposSinSerAdminDevuelveUnauthorized() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("normal@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        EquipoData equipo = equipoService.crearEquipo("Equipo Base");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", usuario.getId());
+
+        // Sin admin, intentar GET form editar
+        this.mockMvc.perform(get("/equipos/" + equipo.getId() + "/editar").session(session))
+                .andExpect(status().isUnauthorized());
+
+        // Sin admin, intentar POST editar
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/editar")
+                        .session(session)
+                        .param("nombre", "Equipo Hack"))
+                .andExpect(status().isUnauthorized());
+
+        // Sin admin, intentar POST eliminar
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/eliminar").session(session))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void editarEquipoConAdminCorrectamente() throws Exception {
+        UsuarioData admin = new UsuarioData();
+        admin.setEmail("admin@ua");
+        admin.setPassword("123");
+        admin.setAdministrador(true);
+        admin = usuarioService.registrar(admin);
+
+        EquipoData equipo = equipoService.crearEquipo("Nombre Antiguo");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", admin.getId());
+
+        // GET form editar
+        this.mockMvc.perform(get("/equipos/" + equipo.getId() + "/editar").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Editar equipo")))
+                .andExpect(content().string(containsString("Nombre Antiguo")));
+
+        // POST editar con éxito
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/editar")
+                        .session(session)
+                        .param("nombre", "Nombre Renovado"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        EquipoData modificado = equipoService.recuperarEquipo(equipo.getId());
+        assertThat(modificado.getNombre()).isEqualTo("Nombre Renovado");
+    }
+
+    @Test
+    public void editarEquipoConAdminNombreVacioMuestraError() throws Exception {
+        UsuarioData admin = new UsuarioData();
+        admin.setEmail("admin2@ua");
+        admin.setPassword("123");
+        admin.setAdministrador(true);
+        admin = usuarioService.registrar(admin);
+
+        EquipoData equipo = equipoService.crearEquipo("Equipo Valido");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", admin.getId());
+
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/editar")
+                        .session(session)
+                        .param("nombre", "   "))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("El nombre del equipo no puede ser vacío")));
+    }
+
+    @Test
+    public void eliminarEquipoConAdminCorrectamente() throws Exception {
+        UsuarioData admin = new UsuarioData();
+        admin.setEmail("admin3@ua");
+        admin.setPassword("123");
+        admin.setAdministrador(true);
+        admin = usuarioService.registrar(admin);
+
+        EquipoData equipo = equipoService.crearEquipo("Equipo Condenado");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", admin.getId());
+
+        // Comprobamos que en el listado se muestran las opciones de editar y eliminar
+        this.mockMvc.perform(get("/equipos").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Editar")))
+                .andExpect(content().string(containsString("Eliminar")));
+
+        // Eliminamos el equipo
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/eliminar").session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        List<EquipoData> equipos = equipoService.findAllOrdenadoPorNombre();
+        assertThat(equipos).extracting(EquipoData::getNombre).doesNotContain("Equipo Condenado");
+    }
 }

@@ -40,6 +40,10 @@
                 <form th:if="${usuarioMenu != null && esMiembro}" method="post" th:action="@{/equipos/{id}/salir(id=${equipo.id})}" style="display: inline-block;">
                     <button id="btnSalir" type="submit" class="btn btn-danger">Dejar el equipo</button>
                 </form>
+                <a class="btn btn-warning" th:if="${usuarioMenu != null && usuarioMenu.administrador}" th:href="@{/equipos/{id}/editar(id=${equipo.id})}">Editar equipo</a>
+                <form th:if="${usuarioMenu != null && usuarioMenu.administrador}" method="post" th:action="@{/equipos/{id}/eliminar(id=${equipo.id})}" style="display: inline-block;">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este equipo?')">Eliminar equipo</button>
+                </form>
                 <a class="btn btn-secondary" th:href="@{/equipos}">Volver al listado</a>
             </p>
         </div>
