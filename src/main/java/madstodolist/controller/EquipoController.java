@@ -2,11 +2,13 @@ package madstodolist.controller;
 
 import madstodolist.authentication.ManagerUserSession;
 import madstodolist.controller.exception.EquipoNotFoundException;
+import madstodolist.controller.exception.UsuarioNoAutorizadoException;
 import madstodolist.controller.exception.UsuarioNoLogeadoException;
 import madstodolist.dto.EquipoData;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.EquipoService;
 import madstodolist.service.EquipoServiceException;
+import madstodolist.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,9 @@ public class EquipoController {
     private EquipoService equipoService;
 
     @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
     private ManagerUserSession managerUserSession;
 
     private Long comprobarUsuarioLogeado() {
@@ -30,6 +35,14 @@ public class EquipoController {
             throw new UsuarioNoLogeadoException();
         }
         return idUsuarioLogeado;
+    }
+
+    private void comprobarAdministrador() {
+        Long idUsuario = managerUserSession.usuarioLogeado();
+        UsuarioData usuario = idUsuario == null ? null : usuarioService.findById(idUsuario);
+        if (usuario == null || !usuario.isAdministrador()) {
+            throw new UsuarioNoAutorizadoException();
+        }
     }
 
     @GetMapping("/equipos")
@@ -115,5 +128,51 @@ public class EquipoController {
         } catch (EquipoServiceException e) {
             throw new EquipoNotFoundException();
         }
+    }
+
+    @GetMapping("/equipos/{id}/editar")
+    public String formEditarEquipo(@PathVariable("id") Long id, Model model) {
+        comprobarAdministrador();
+        try {
+            EquipoData equipoData = equipoService.recuperarEquipo(id);
+            model.addAttribute("equipoData", equipoData);
+            return "formEditarEquipo";
+        } catch (EquipoServiceException e) {
+            throw new EquipoNotFoundException();
+        }
+    }
+
+    @PostMapping("/equipos/{id}/editar")
+    public String modificarEquipo(@PathVariable("id") Long id, @ModelAttribute EquipoData equipoData, Model model, RedirectAttributes flash) {
+        comprobarAdministrador();
+        try {
+            equipoService.modificarEquipo(id, equipoData.getNombre());
+            flash.addFlashAttribute("mensaje", "Equipo modificado correctamente");
+            return "redirect:/equipos";
+        } catch (EquipoServiceException e) {
+            if (e.getMessage().contains("no existe")) {
+                throw new EquipoNotFoundException();
+            }
+            equipoData.setId(id);
+            model.addAttribute("error", e.getMessage());
+            return "formEditarEquipo";
+        }
+    }
+
+    @PostMapping("/equipos/{id}/eliminar")
+    public String eliminarEquipo(@PathVariable("id") Long id, RedirectAttributes flash) {
+        comprobarAdministrador();
+        try {
+            equipoService.eliminarEquipo(id);
+            flash.addFlashAttribute("mensaje", "Equipo eliminado correctamente");
+            return "redirect:/equipos";
+        } catch (EquipoServiceException e) {
+            throw new EquipoNotFoundException();
+        }
+    }
+
+    @DeleteMapping("/equipos/{id}")
+    public String eliminarEquipoDelete(@PathVariable("id") Long id, RedirectAttributes flash) {
+        return eliminarEquipo(id, flash);
     }
 }
