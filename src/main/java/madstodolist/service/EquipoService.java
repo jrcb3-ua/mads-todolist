@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,6 +107,10 @@ public class EquipoService {
         if (equipo == null) {
             throw new EquipoServiceException("Equipo " + idEquipo + " no existe");
         }
+        for (Usuario usuario : new HashSet<>(equipo.getUsuarios())) {
+            equipo.removeUsuario(usuario);
+        }
+        equipoRepository.delete(equipo);
     }
 
     @Transactional(readOnly = true)
