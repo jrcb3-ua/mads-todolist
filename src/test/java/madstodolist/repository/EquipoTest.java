@@ -119,4 +119,21 @@ public class EquipoTest {
         // THEN
         assertThat(equipos).hasSize(2);
     }
+
+    @Test
+    public void comprobarRelacionMuchosAMuchosEliminarUsuario() {
+        // GIVEN
+        Equipo equipo = new Equipo("Proyecto 1");
+        Usuario usuario = new Usuario("user@ua");
+        equipo.addUsuario(usuario);
+        assertThat(equipo.getUsuarios()).contains(usuario);
+        assertThat(usuario.getEquipos()).contains(equipo);
+
+        // WHEN
+        equipo.removeUsuario(usuario);
+
+        // THEN
+        assertThat(equipo.getUsuarios()).doesNotContain(usuario);
+        assertThat(usuario.getEquipos()).doesNotContain(equipo);
+    }
 }
