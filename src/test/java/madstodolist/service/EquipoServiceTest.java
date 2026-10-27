@@ -138,4 +138,21 @@ public class EquipoServiceTest {
         assertThatThrownBy(() -> equipoService.añadirUsuarioAEquipo(idEquipo, idUsuario))
                 .isInstanceOf(EquipoServiceException.class);
     }
+
+    @Test
+    public void eliminarUsuarioEquipoInexistenteLanzaExcepcion() {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto 1");
+
+        final Long idEquipo = equipo.getId();
+        final Long idUsuario = usuario.getId();
+
+        assertThatThrownBy(() -> equipoService.eliminarUsuarioEquipo(999L, idUsuario))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.eliminarUsuarioEquipo(idEquipo, 999L))
+                .isInstanceOf(EquipoServiceException.class);
+    }
 }
