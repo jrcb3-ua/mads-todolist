@@ -9,6 +9,10 @@
     <div class="row">
         <div class="col">
             <h2>Listado de equipos</h2>
+            <div class="alert alert-success" th:if="${mensaje != null}" th:text="${mensaje}"></div>
+            <p th:if="${usuarioMenu != null}">
+                <a class="btn btn-success" th:href="@{/equipos/nuevo}">Nuevo equipo</a>
+            </p>
         </div>
     </div>
 

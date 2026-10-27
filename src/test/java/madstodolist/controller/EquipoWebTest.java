@@ -12,9 +12,14 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -85,5 +90,104 @@ public class EquipoWebTest {
     public void detalleEquipoNoExisteDevuelveNotFound() throws Exception {
         this.mockMvc.perform(get("/equipos/999"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void nuevoEquipoSinLoginDevuelveUnauthorized() throws Exception {
+        this.mockMvc.perform(get("/equipos/nuevo"))
+                .andExpect(status().isUnauthorized());
+
+        this.mockMvc.perform(post("/equipos/nuevo").param("nombre", "Proyecto X"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void formNuevoEquipoConLogin() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", usuario.getId());
+
+        this.mockMvc.perform(get("/equipos/nuevo").session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Nuevo equipo")))
+                .andExpect(content().string(containsString("Nombre del equipo:")));
+    }
+
+    @Test
+    public void crearNuevoEquipoCorrectamente() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", usuario.getId());
+
+        this.mockMvc.perform(post("/equipos/nuevo")
+                        .session(session)
+                        .param("nombre", "Nuevo Equipo Proyecto"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos"));
+
+        List<EquipoData> equipos = equipoService.findAllOrdenadoPorNombre();
+        assertThat(equipos).extracting(EquipoData::getNombre).contains("Nuevo Equipo Proyecto");
+    }
+
+    @Test
+    public void crearNuevoEquipoNombreVacioMuestraError() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", usuario.getId());
+
+        this.mockMvc.perform(post("/equipos/nuevo")
+                        .session(session)
+                        .param("nombre", "   "))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("El nombre del equipo no puede ser vacío")));
+    }
+
+    @Test
+    public void unirseYSalirDeEquipoCorrectamente() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        EquipoData equipo = equipoService.crearEquipo("Equipo Alpha");
+
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("idUsuarioLogeado", usuario.getId());
+
+        // Comprobamos que al inicio no es miembro y aparece el botón Unirse al equipo
+        this.mockMvc.perform(get("/equipos/" + equipo.getId()).session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Unirse al equipo")));
+
+        // Nos unimos al equipo
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/unirse").session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos/" + equipo.getId()));
+
+        assertThat(equipoService.usuariosEquipo(equipo.getId())).hasSize(1);
+
+        // Ahora comprobamos que aparece el botón Dejar el equipo
+        this.mockMvc.perform(get("/equipos/" + equipo.getId()).session(session))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Dejar el equipo")));
+
+        // Dejamos el equipo
+        this.mockMvc.perform(post("/equipos/" + equipo.getId() + "/salir").session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/equipos/" + equipo.getId()));
+
+        assertThat(equipoService.usuariosEquipo(equipo.getId())).isEmpty();
     }
 }
