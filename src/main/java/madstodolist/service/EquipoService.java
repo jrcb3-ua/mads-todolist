@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,19 @@ public class EquipoService {
         if (equipo == null) {
             throw new EquipoServiceException("Equipo " + id + " no existe");
         }
+        return modelMapper.map(equipo, EquipoData.class);
+    }
+
+    @Transactional
+    public EquipoData modificarEquipo(Long idEquipo, String nuevoNombre) {
+        if (nuevoNombre == null || nuevoNombre.trim().isEmpty()) {
+            throw new EquipoServiceException("El nombre del equipo no puede ser vacío");
+        }
+        Equipo equipo = equipoRepository.findById(idEquipo).orElse(null);
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo " + idEquipo + " no existe");
+        }
+        equipo.setNombre(nuevoNombre);
         return modelMapper.map(equipo, EquipoData.class);
     }
 
@@ -85,6 +99,18 @@ public class EquipoService {
             throw new EquipoServiceException("El usuario no pertenece al equipo");
         }
         equipo.removeUsuario(usuario);
+    }
+
+    @Transactional
+    public void eliminarEquipo(Long idEquipo) {
+        Equipo equipo = equipoRepository.findById(idEquipo).orElse(null);
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo " + idEquipo + " no existe");
+        }
+        for (Usuario usuario : new HashSet<>(equipo.getUsuarios())) {
+            equipo.removeUsuario(usuario);
+        }
+        equipoRepository.delete(equipo);
     }
 
     @Transactional(readOnly = true)

@@ -190,4 +190,60 @@ public class EquipoServiceTest {
         assertThat(equipoService.usuariosEquipo(equipo.getId())).isEmpty();
         assertThat(equipoService.equiposUsuario(usuario.getId())).isEmpty();
     }
+
+    @Test
+    public void modificarNombreEquipo() {
+        // GIVEN
+        EquipoData equipo = equipoService.crearEquipo("Proyecto Inicial");
+
+        // WHEN
+        equipoService.modificarEquipo(equipo.getId(), "Proyecto Modificado");
+
+        // THEN
+        EquipoData equipoActualizado = equipoService.recuperarEquipo(equipo.getId());
+        assertThat(equipoActualizado.getNombre()).isEqualTo("Proyecto Modificado");
+    }
+
+    @Test
+    public void modificarEquipoExcepciones() {
+        EquipoData equipo = equipoService.crearEquipo("Proyecto Inicial");
+        final Long idEquipo = equipo.getId();
+
+        assertThatThrownBy(() -> equipoService.modificarEquipo(999L, "Nombre"))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, null))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, ""))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThatThrownBy(() -> equipoService.modificarEquipo(idEquipo, "   "))
+                .isInstanceOf(EquipoServiceException.class);
+    }
+
+    @Test
+    public void eliminarEquipoInexistenteLanzaExcepcion() {
+        assertThatThrownBy(() -> equipoService.eliminarEquipo(999L))
+                .isInstanceOf(EquipoServiceException.class);
+    }
+
+    @Test
+    public void eliminarEquipoConUsuariosDesvinculaYBorra() {
+        // GIVEN
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        EquipoData equipo = equipoService.crearEquipo("Equipo A Eliminar");
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+        assertThat(equipoService.equiposUsuario(usuario.getId())).hasSize(1);
+
+        // WHEN
+        final Long idEquipo = equipo.getId();
+        equipoService.eliminarEquipo(idEquipo);
+
+        // THEN
+        assertThatThrownBy(() -> equipoService.recuperarEquipo(idEquipo))
+                .isInstanceOf(EquipoServiceException.class);
+        assertThat(equipoService.equiposUsuario(usuario.getId())).isEmpty();
+    }
 }
