@@ -190,4 +190,17 @@ public class EquipoServiceTest {
         assertThat(equipoService.usuariosEquipo(equipo.getId())).isEmpty();
         assertThat(equipoService.equiposUsuario(usuario.getId())).isEmpty();
     }
+
+    @Test
+    public void modificarNombreEquipo() {
+        // GIVEN
+        EquipoData equipo = equipoService.crearEquipo("Proyecto Inicial");
+
+        // WHEN
+        equipoService.modificarEquipo(equipo.getId(), "Proyecto Modificado");
+
+        // THEN
+        EquipoData equipoActualizado = equipoService.recuperarEquipo(equipo.getId());
+        assertThat(equipoActualizado.getNombre()).isEqualTo("Proyecto Modificado");
+    }
 }
