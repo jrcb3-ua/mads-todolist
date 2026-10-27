@@ -37,7 +37,9 @@ public class EquipoService {
     @Transactional(readOnly = true)
     public EquipoData recuperarEquipo(Long id) {
         Equipo equipo = equipoRepository.findById(id).orElse(null);
-        if (equipo == null) return null;
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo " + id + " no existe");
+        }
         return modelMapper.map(equipo, EquipoData.class);
     }
 
@@ -53,13 +55,22 @@ public class EquipoService {
     @Transactional
     public void añadirUsuarioAEquipo(Long id, Long id1) {
         Equipo equipo = equipoRepository.findById(id).orElse(null);
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo " + id + " no existe");
+        }
         Usuario usuario = usuarioRepository.findById(id1).orElse(null);
+        if (usuario == null) {
+            throw new EquipoServiceException("Usuario " + id1 + " no existe");
+        }
         equipo.addUsuario(usuario);
     }
 
     @Transactional(readOnly = true)
     public List<UsuarioData> usuariosEquipo(Long id) {
         Equipo equipo = equipoRepository.findById(id).orElse(null);
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo " + id + " no existe");
+        }
         return equipo.getUsuarios().stream()
                 .map(usuario -> modelMapper.map(usuario, UsuarioData.class))
                 .collect(Collectors.toList());
@@ -68,6 +79,9 @@ public class EquipoService {
     @Transactional(readOnly = true)
     public List<EquipoData> equiposUsuario(Long idUsuario) {
         Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        if (usuario == null) {
+            throw new EquipoServiceException("Usuario " + idUsuario + " no existe");
+        }
         return usuario.getEquipos().stream()
                 .map(equipo -> modelMapper.map(equipo, EquipoData.class))
                 .sorted(Comparator.comparing(EquipoData::getNombre))
