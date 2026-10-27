@@ -81,6 +81,9 @@ public class EquipoService {
         if (usuario == null) {
             throw new EquipoServiceException("Usuario " + idUsuario + " no existe");
         }
+        if (!equipo.getUsuarios().contains(usuario)) {
+            throw new EquipoServiceException("El usuario no pertenece al equipo");
+        }
     }
 
     @Transactional(readOnly = true)
